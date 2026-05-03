@@ -1,4 +1,4 @@
-# personal-claude-skills
+# claude-workflow-skills
 
 Personal Claude Code skill collection.
 
@@ -21,19 +21,19 @@ Sprint extraction, implementation tracking, and write-back for AI-assisted devel
 
 ```bash
 # In Claude Code, run:
-/plugin marketplace add MacrosV/personal-claude-skills
-/plugin install sprint-workflow@personal-claude-skills
+/plugin marketplace add MacrosV/claude-workflow-skills
+/plugin install sprint-workflow@claude-workflow-skills
 ```
 
 ## Setup on a New Machine
 
 ```bash
 # Clone this repo somewhere convenient:
-git clone https://github.com/MacrosV/personal-claude-skills.git ~/projects/personal-claude-skills
+git clone https://github.com/MacrosV/claude-workflow-skills.git ~/projects/claude-workflow-skills
 
 # In Claude Code:
-/plugin marketplace add MacrosV/personal-claude-skills
-/plugin install sprint-workflow@personal-claude-skills
+/plugin marketplace add MacrosV/claude-workflow-skills
+/plugin install sprint-workflow@claude-workflow-skills
 ```
 
 ## Adding New Skills
@@ -41,4 +41,4 @@ git clone https://github.com/MacrosV/personal-claude-skills.git ~/projects/perso
 1. Create `new-skill-name/plugin.json` and `new-skill-name/skills/new-skill-name/SKILL.md`
 2. Add the plugin entry to `.claude-plugin/marketplace.json`
 3. Commit and push
-4. Run `/plugin marketplace update personal-claude-skills` in Claude Code to pick up the new skill
+4. Run `/plugin marketplace update claude-workflow-skills` in Claude Code to pick up the new skill
