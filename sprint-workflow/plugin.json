@@ -1,0 +1,8 @@
+{
+  "name": "sprint-workflow",
+  "description": "Sprint extraction, implementation tracking, and write-back workflow for AI-assisted development. Provides the process, templates, and quality checks for working piecemeal through a SPRINTS.md planning document with context cleared between sprints.",
+  "license": "MIT",
+  "skills": [
+    "./skills/sprint-workflow"
+  ]
+}

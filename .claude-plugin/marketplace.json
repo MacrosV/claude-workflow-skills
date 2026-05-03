@@ -1,0 +1,18 @@
+{
+  "name": "personal-claude-skills",
+  "owner": {
+    "name": "MacrosV"
+  },
+  "metadata": {
+    "description": "Personal Claude Code skills for AI-assisted development workflows.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "sprint-workflow",
+      "description": "Sprint extraction, implementation tracking, and write-back workflow for AI-assisted development against structured sprint plans.",
+      "source": "./sprint-workflow",
+      "strict": true
+    }
+  ]
+}
