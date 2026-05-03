@@ -5,6 +5,7 @@ Personal Claude Code skill collection.
 ## Skills
 
 ### sprint-workflow
+This skill was created with Claude using the skill creation skill from Pyroxin's Opinionated Claude Skills (https://github.com/Pyroxin/opinionated-claude-skills).
 
 Sprint extraction, implementation tracking, and write-back for AI-assisted development against structured sprint plans (`SPRINTS.md`).
 
