@@ -1,18 +1,54 @@
 ---
 name: sprint-workflow
-description: Sprint extraction, tracking, and write-back for AI-assisted development. Use when working with a SPRINTS.md planning document: extracting a sprint into currentwork.md before starting, tracking implementation progress, enforcing quality checks, and writing back the implementation record when done. Also activates when the user mentions "extract sprint", "start sprint", "write back", or "currentwork.md".
+description: Sprint extraction, tracking, and write-back for AI-assisted development. Use when working with a SPRINTS.md planning document: extracting a plan section (sprint) into currentwork.md before starting, tracking implementation progress, enforcing quality checks, writing back the implementation record when done, and bootstrapping the next sprint. Also activates when the user mentions "extract sprint", "start sprint", "write back", "next sprint", or "currentwork.md".
 ---
 
 # Sprint Workflow
 
 <skill_scope skill="sprint-workflow">
-This skill provides the process and quality framework for implementing software in discrete, context-isolated sprints using a structured planning document. It is designed to work with `SPRINTS.md` planning documents and `currentwork.md` working files.
+This skill provides the process and quality framework for implementing software in discrete, context-isolated plan sections — called **sprints** — using a structured planning document. It is designed to work with `SPRINTS.md` planning documents and `currentwork.md` working files.
+
+A **sprint** is a numbered section in `SPRINTS.md`. Each sprint is a self-contained unit of work: it has a goal, a set of tasks, acceptance criteria, and an explicit out-of-scope boundary. The workflow processes sprints in order, one at a time, with context cleared between them.
 
 **Related skills:**
 - `opinionated-software-engineering:software-engineer` — Design principles that apply during implementation
 - `opinionated-software-engineering:test-driven-development` — Testing philosophy for acceptance criteria
 - `opinionated-software-engineering:git-version-control` — Commit standards for sprint completion
 </skill_scope>
+
+## SPRINTS.md Document Format
+
+<document_format>
+`SPRINTS.md` is a planning document where each numbered `##` section is one sprint. The workflow reads this file to find the next sprint to work on, and writes back to it when a sprint completes.
+
+**Minimal sprint structure:**
+
+```markdown
+## Sprint N: Title
+
+**Goal:** One sentence describing what this sprint produces.
+
+**What changes:**
+Detailed description of all changes.
+
+### Task N.X — Task Title
+Task description.
+
+**Acceptance criteria:**
+- [ ] criterion — `runnable command`
+
+**Out of scope:**
+What is explicitly excluded from this sprint.
+```
+
+**Completed sprint** — a sprint that has been written back has its heading updated:
+
+```markdown
+## Sprint N: Title ✓ Complete (YYYY-MM-DD)
+```
+
+The workflow finds the next sprint to implement by scanning `SPRINTS.md` top-to-bottom for the first `##` heading that does not contain `✓ Complete`.
+</document_format>
 
 ## When to Use This Skill
 
@@ -64,16 +100,27 @@ The sprint workflow has three phases. Each phase has a clear entry condition and
 
 **On deviation from spec:** When reality requires a different approach than the spec describes, implement what is correct, document the deviation in the Deviations Log with the reason, and continue. Do not silently diverge — every deviation must be recorded.
 
-### Phase 3: Write Back
+### Phase 3: Write Back and Bootstrap
 
 **Entry condition:** All tasks `[x]`, Definition of Done passes.
 
-**Steps:**
-1. Convert `currentwork.md` to an implementation record (see `<writeback_convention>`).
-2. In `SPRINTS.md`, replace the sprint's spec section with the implementation record.
-3. Clear or archive `currentwork.md`.
+**Confirm before proceeding:** Tell the user the sprint is complete and ask for confirmation before writing back. State clearly what will happen: SPRINTS.md will be updated and the next sprint (if any) will be extracted into currentwork.md.
 
-**Exit condition:** `SPRINTS.md` updated, `currentwork.md` cleared.
+**Write-back steps (execute after confirmation):**
+1. Read `currentwork.md` completely — this is the source of truth for what was built.
+2. Identify the sprint section in `SPRINTS.md`: the full block from the sprint's `## Sprint N:` heading up to (but not including) the next `##` heading, or end of file.
+3. Compose the complete replacement text using `<writeback_convention>`. Write the entire section out in full before making any edits.
+4. Make a **single Edit call** to replace the sprint section in `SPRINTS.md`. This is one atomic substitution, not a series of incremental edits.
+
+**Bootstrap next sprint (immediately after write-back):**
+5. Scan `SPRINTS.md` for the next incomplete sprint (first `##` heading without `✓ Complete`).
+6. **If a next sprint exists:**
+   a. Run quality checks (see `<quality_checks>`) on that sprint.
+   b. If quality checks pass: extract the sprint into `currentwork.md` using `<currentwork_template>`, replacing its current contents with a single Write call. Tell the user the next sprint is ready and they can clear context to begin.
+   c. If quality checks fail: write a single `currentwork.md` that lists only the failures and the fixes needed. Tell the user what needs fixing before the next sprint can start.
+7. **If no next sprint exists:** clear `currentwork.md` with a single Write call containing only a "All sprints complete" note. Tell the user the plan is finished.
+
+**Exit condition:** `SPRINTS.md` updated with implementation record; `currentwork.md` contains either the next sprint (ready to implement), a quality-check failure report, or an "all complete" note.
 </core_process>
 
 ## currentwork.md Template
@@ -162,6 +209,7 @@ All must pass before write-back:
 - [ ] Implementation notes filled in for every task  
 - [ ] Deviations log complete  
 - [ ] Written back to SPRINTS.md  
+- [ ] Next sprint bootstrapped (or all sprints complete)  
 ```
 </currentwork_template>
 
@@ -283,4 +331,12 @@ When the spec says "add field X to model Y" and you discover Y already has X, or
 ### Over-reading before starting
 
 Reading every file in the entire codebase "to get context" before starting the first task burns the context budget. Read only the files in the Files to Read block. If a task requires additional context, read those specific files when you reach that task.
+
+### Incremental write-back
+
+Making multiple small Edit calls to SPRINTS.md during write-back — changing the heading, then the goal, then each task result individually — leaves the document in an inconsistent state between calls and generates unnecessary tool noise. Compose the entire replacement section first, then replace it in one Edit call.
+
+### Skipping the bootstrap
+
+Clearing `currentwork.md` after write-back without checking for a next sprint forces the user to manually trigger sprint extraction in their next session. After every write-back, always scan for the next sprint and populate `currentwork.md` before the session ends.
 </common_mistakes>
