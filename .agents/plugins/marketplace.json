@@ -1,5 +1,5 @@
 {
-  "name": "claude-workflow-skills-codex",
+  "name": "claude-workflow-skills",
   "interface": {
     "displayName": "Workflow Skills"
   },
