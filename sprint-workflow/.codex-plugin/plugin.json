@@ -1,0 +1,37 @@
+{
+  "name": "sprint-workflow",
+  "version": "1.1.0",
+  "description": "Serial sprint execution and parallel wave planning for AI-assisted software development.",
+  "author": {
+    "name": "MacrosV",
+    "url": "https://github.com/MacrosV"
+  },
+  "repository": "https://github.com/MacrosV/claude-workflow-skills",
+  "license": "EPL-2.0",
+  "keywords": [
+    "sprints",
+    "workflow",
+    "planning",
+    "parallel-agents",
+    "implementation-plan"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Sprint Workflow",
+    "shortDescription": "Run serial sprints or parallel wave plans from local planning docs.",
+    "longDescription": "Extract sprint work, track implementation, coordinate parallel wave packets, collect sub-agent completion reports, and maintain implementation state documents.",
+    "developerName": "MacrosV",
+    "category": "Productivity",
+    "capabilities": [
+      "Write",
+      "Planning",
+      "Orchestration"
+    ],
+    "defaultPrompt": [
+      "Start the next sprint.",
+      "Convert this plan into waves.",
+      "Run the next wave plan."
+    ],
+    "brandColor": "#2563EB"
+  }
+}

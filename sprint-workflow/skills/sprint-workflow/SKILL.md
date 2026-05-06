@@ -1,14 +1,17 @@
 ---
 name: sprint-workflow
-description: Sprint extraction, tracking, and write-back for AI-assisted development. Use when working with a SPRINTS.md planning document: extracting a plan section (sprint) into currentwork.md before starting, tracking implementation progress, enforcing quality checks, writing back the implementation record when done, and bootstrapping the next sprint. Also activates when the user mentions "extract sprint", "start sprint", "write back", "next sprint", or "currentwork.md".
+description: Sprint extraction, tracking, write-back, and parallel wave planning for AI-assisted development. Use when working with SPRINTS.md, IMPLEMENTATION_PLAN.md, currentwork.md, serial sprint execution, parallel breakout sprints, wave plans, sub-agent coordination, implementation records, or converting a serial plan into batched parallel work. Also activates when the user mentions "extract sprint", "start sprint", "write back", "next sprint", "currentwork.md", "wave plan", "parallel sprints", or "breakout agents".
 ---
 
 # Sprint Workflow
 
 <skill_scope skill="sprint-workflow">
-This skill provides the process and quality framework for implementing software in discrete, context-isolated plan sections — called **sprints** — using a structured planning document. It is designed to work with `SPRINTS.md` planning documents and `currentwork.md` working files.
+This skill provides the process and quality framework for implementing software in discrete, context-isolated plan sections — called **sprints** — using structured planning and working documents. It supports two modes:
 
-A **sprint** is a numbered section in `SPRINTS.md`. Each sprint is a self-contained unit of work: it has a goal, a set of tasks, acceptance criteria, and an explicit out-of-scope boundary. The workflow processes sprints in order, one at a time, with context cleared between them.
+- **Serial mode:** process one sprint at a time from `SPRINTS.md` using `currentwork.md`.
+- **Wave-plan mode:** process staged waves from `IMPLEMENTATION_PLAN.md`, where each wave contains multiple non-overlapping sprint packets that can be assigned to parallel sub-agents.
+
+A **sprint** is a self-contained unit of work: it has a goal, write ownership, required context, tasks, acceptance criteria, and an explicit out-of-scope boundary. A **wave** is an ordered integration stage containing one or more sprint packets that may run in parallel when their write sets do not overlap and their dependencies are satisfied.
 
 **Related skills:**
 - `opinionated-software-engineering:software-engineer` — Design principles that apply during implementation
@@ -19,7 +22,7 @@ A **sprint** is a numbered section in `SPRINTS.md`. Each sprint is a self-contai
 ## SPRINTS.md Document Format
 
 <document_format>
-`SPRINTS.md` is a planning document where each numbered `##` section is one sprint. The workflow reads this file to find the next sprint to work on, and writes back to it when a sprint completes.
+`SPRINTS.md` is a serial planning document where each numbered `##` section is one sprint. The workflow reads this file to find the next sprint to work on, and records completion when a sprint completes.
 
 **Minimal sprint structure:**
 
@@ -47,8 +50,29 @@ What is explicitly excluded from this sprint.
 ## Sprint N: Title ✓ Complete (YYYY-MM-DD)
 ```
 
-The workflow finds the next sprint to implement by scanning `SPRINTS.md` top-to-bottom for the first `##` heading that does not contain `✓ Complete`.
+The serial workflow finds the next sprint to implement by scanning `SPRINTS.md` top-to-bottom for the first `##` heading that does not contain `✓ Complete`.
 </document_format>
+
+## Wave Plan Document Format
+
+<wave_plan_format>
+`IMPLEMENTATION_PLAN.md` is a parallel-friendly planning document. It preserves planned intent and should not be rewritten into an implementation record. Completed reality belongs in `SOFTWARE_STATE.md` or `COMPLETED_SPRINTS.md`.
+
+Load `references/wave-planning.md` when creating, converting, extracting, dispatching, or integrating wave plans. It contains the wave document format, packet templates, completion report template, sub-agent orchestration rules, role/model selection guidance, wave quality checks, and serial-to-wave conversion rules.
+
+Core companion documents:
+
+| File | Purpose |
+|------|---------|
+| `IMPLEMENTATION_PLAN.md` | Original plan: waves, sprint packets, dependencies, ownership, acceptance criteria |
+| `currentwork.md` | Active coordination state for the current wave or serial sprint |
+| `currentwork/sprint-NX.md` | Extracted work packet for one agent |
+| `currentwork/results/NX.md` | Completion report written by one agent |
+| `SOFTWARE_STATE.md` | Current implemented reality after each completed wave |
+| `COMPLETED_SPRINTS.md` | Optional append-only implementation history |
+
+Use `IMPLEMENTATION_PLAN.md` when the user wants staged parallel work, multiple sub-agents, or a plan designed for non-overlapping implementation batches.
+</wave_plan_format>
 
 ## When to Use This Skill
 
@@ -56,7 +80,9 @@ The workflow finds the next sprint to implement by scanning `SPRINTS.md` top-to-
 Activate when any of these conditions hold:
 
 - A `SPRINTS.md` or equivalent planning document is present in the project
+- An `IMPLEMENTATION_PLAN.md` wave plan is present in the project
 - The user asks to "start", "extract", "begin", or "continue" a sprint
+- The user asks to create, convert, or run a parallel wave plan
 - A `currentwork.md` file exists and work is in progress
 - The user asks about write-back, implementation records, or sprint completion
 - The user asks about sprint quality, feasibility, or context budget
@@ -66,10 +92,26 @@ Do not activate for:
 - Reviewing completed sprints in SPRINTS.md without intent to implement
 </when_to_use>
 
-## Core Process
+## Mode Selection
 
-<core_process>
-The sprint workflow has three phases. Each phase has a clear entry condition and exit condition.
+<mode_selection>
+Choose the workflow mode before extracting work:
+
+| Condition | Mode |
+|-----------|------|
+| User asks for parallel agents, breakout sprints, batched stages, or wave planning | Wave-plan mode |
+| `IMPLEMENTATION_PLAN.md` exists and has incomplete waves | Wave-plan mode |
+| `SPRINTS.md` exists and no parallelization is requested | Serial mode |
+| Existing `currentwork.md` references a serial sprint | Serial mode |
+| Existing `currentwork.md` references an active wave | Wave-plan mode |
+
+Serial mode remains the fallback when write ownership is unclear, sprint dependencies are tightly coupled, or parallel execution would create merge conflicts.
+</mode_selection>
+
+## Serial Core Process
+
+<serial_core_process>
+The serial sprint workflow has three phases. Each phase has a clear entry condition and exit condition.
 
 ### Phase 1: Extract
 
@@ -104,9 +146,9 @@ The sprint workflow has three phases. Each phase has a clear entry condition and
 
 **Entry condition:** All tasks `[x]`, Definition of Done passes.
 
-**Confirm before proceeding:** Tell the user the sprint is complete and ask for confirmation before writing back. State clearly what will happen: SPRINTS.md will be updated and the next sprint (if any) will be extracted into currentwork.md.
+**Proceed without confirmation by default:** When all checks pass, write back and bootstrap the next sprint without asking. Ask the user before write-back only if there is a failed check, destructive action, unresolved deviation, ambiguous product decision, or user instruction requiring confirmation.
 
-**Write-back steps (execute after confirmation):**
+**Write-back steps:**
 1. Read `currentwork.md` completely — this is the source of truth for what was built.
 2. Identify the sprint section in `SPRINTS.md`: the full block from the sprint's `## Sprint N:` heading up to (but not including) the next `##` heading, or end of file.
 3. Compose the complete replacement text using `<writeback_convention>`. Write the entire section out in full before making any edits.
@@ -120,13 +162,71 @@ The sprint workflow has three phases. Each phase has a clear entry condition and
    c. If quality checks fail: write a single `currentwork.md` that lists only the failures and the fixes needed. Tell the user what needs fixing before the next sprint can start.
 7. **If no next sprint exists:** clear `currentwork.md` with a single Write call containing only a "All sprints complete" note. Tell the user the plan is finished.
 
-**Exit condition:** `SPRINTS.md` updated with implementation record; `currentwork.md` contains either the next sprint (ready to implement), a quality-check failure report, or an "all complete" note.
-</core_process>
+**Exit condition:** completion is recorded; `currentwork.md` contains either the next sprint (ready to implement), a quality-check failure report, or an "all complete" note.
+</serial_core_process>
+
+## Wave-Plan Core Process
+
+<wave_plan_core_process>
+The wave-plan workflow has four phases: prepare, dispatch, integrate, and advance.
+
+### Phase 1: Prepare Wave
+
+**Entry condition:** User asks for parallel work, `IMPLEMENTATION_PLAN.md` exists, or a serial plan should be converted to waves.
+
+**Steps:**
+1. Read `IMPLEMENTATION_PLAN.md` completely, or convert `SPRINTS.md` using `<serial_to_wave_conversion>`.
+2. Identify the first incomplete wave whose dependencies are satisfied.
+3. Run wave quality checks (see `<wave_quality_checks>`).
+4. Create or update `currentwork.md` as the wave coordination index using `<wave_currentwork_template>`.
+5. Extract each ready sprint packet into `currentwork/sprint-NX.md`.
+
+**Exit condition:** `currentwork.md` lists the active wave, sprint packets, owners, dependencies, write sets, dispatch status, and integration gate.
+
+### Phase 2: Dispatch Parallel Work
+
+**Entry condition:** Active wave has two or more ready sprint packets with non-overlapping write sets.
+
+**Steps:**
+1. Assign each sprint packet to one sub-agent only when the user or runtime permits sub-agent use.
+2. Select the least expensive capable agent role/model tier using `references/wave-planning.md`.
+3. Give each sub-agent its packet file, owned write paths, read-only paths, acceptance criteria, and completion-report path.
+4. Tell sub-agents they are not alone in the codebase, must not revert others' work, and must stay inside their write ownership.
+5. If sub-agents are unavailable, process packets serially while preserving packet boundaries.
+
+**Exit condition:** each dispatched packet has a completion report in `currentwork/results/NX.md`, or a blocker is recorded in `currentwork.md`.
+
+### Phase 3: Integrate Wave
+
+**Entry condition:** All dispatched sprint packets are complete or blocked.
+
+**Steps:**
+1. Read every `currentwork/results/NX.md` report.
+2. Verify files changed match each packet's declared write ownership.
+3. Run each packet's acceptance criteria, then the wave integration gate.
+4. Resolve integration failures locally if they are within the coordinator's scope; otherwise record the blocker.
+5. Update `SOFTWARE_STATE.md` with what the software now does, important implementation decisions, public contracts, and known limitations.
+6. Append implementation details to `COMPLETED_SPRINTS.md` if that file is used.
+7. Mark the wave complete in `currentwork.md`; optionally add a concise completion marker in `IMPLEMENTATION_PLAN.md`, but do not replace planned text with implementation text.
+
+**Exit condition:** integration gate passes and implemented reality is recorded in `SOFTWARE_STATE.md`.
+
+### Phase 4: Advance
+
+**Entry condition:** Active wave is complete.
+
+**Steps:**
+1. Scan `IMPLEMENTATION_PLAN.md` for the next incomplete wave whose dependencies are satisfied.
+2. If a next wave exists, prepare it immediately.
+3. If no next wave exists, update `currentwork.md` with an "all waves complete" note.
+
+**Exit condition:** next wave is ready, blocked with specific reasons, or all waves are complete.
+</wave_plan_core_process>
 
 ## currentwork.md Template
 
 <currentwork_template>
-When creating `currentwork.md`, use this structure. Sections in `[brackets]` are instructions; replace them with actual content.
+When creating `currentwork.md` for serial mode, use this structure. Sections in `[brackets]` are instructions; replace them with actual content.
 
 ```markdown
 # currentwork.md — Sprint [N]: [Title from SPRINTS.md]
@@ -213,6 +313,24 @@ All must pass before write-back:
 ```
 </currentwork_template>
 
+## Wave currentwork.md Template
+
+<wave_currentwork_template>
+Use the template in `references/wave-planning.md`. Keep `currentwork.md` as a coordination index, not as the detailed packet spec.
+</wave_currentwork_template>
+
+## Sprint Packet Template
+
+<sprint_packet_template>
+Use the template in `references/wave-planning.md`. Each `currentwork/sprint-NX.md` file must be self-contained enough for one agent to execute without reading unrelated plan sections.
+</sprint_packet_template>
+
+## Completion Report Template
+
+<completion_report_template>
+Use the template in `references/wave-planning.md`. Sub-agents write one completion report each; the coordinator is the only writer to shared state documents.
+</completion_report_template>
+
 ## Quality Checks
 
 <quality_checks>
@@ -272,10 +390,22 @@ If the sprint exceeds the session budget, split it before extracting.
 Exceeding any bound is a signal (not a hard rule) to consider splitting.
 </quality_checks>
 
+## Wave Quality Checks
+
+<wave_quality_checks>
+Run the checks in `references/wave-planning.md` before dispatching a wave. A wave that fails those checks is not ready for parallel execution; either fix the plan or run the affected packets serially.
+</wave_quality_checks>
+
+## Serial to Wave Conversion
+
+<serial_to_wave_conversion>
+Use this when the user asks to convert a serial `SPRINTS.md` plan into a parallel wave plan. Load `references/wave-planning.md`, build dependency and ownership metadata, batch independent packets into waves, and write the result to `IMPLEMENTATION_PLAN.md`. Preserve `SPRINTS.md` as the original serial source unless the user asks to replace it.
+</serial_to_wave_conversion>
+
 ## Write-back Convention
 
 <writeback_convention>
-When writing a completed sprint back to `SPRINTS.md`, convert the spec into an implementation record using these substitutions:
+When writing a completed serial sprint back to `SPRINTS.md`, convert the spec into an implementation record using these substitutions. In wave-plan mode, preserve `IMPLEMENTATION_PLAN.md` as planned intent and write implemented reality to `SOFTWARE_STATE.md` or `COMPLETED_SPRINTS.md` instead.
 
 | Spec element | Implementation record element |
 |--------------|-------------------------------|
@@ -307,6 +437,8 @@ If context is cleared or the session ends mid-sprint, the next session should:
 4. Continue from the first `[ ]` task.
 
 Do not re-run completed tasks. Do not re-read the entire codebase. Trust the implementation notes in `currentwork.md` for what was already done.
+
+If context is cleared mid-wave, the next session should read `currentwork.md`, any active `currentwork/sprint-NX.md` packets, and existing `currentwork/results/NX.md` reports. Continue from the first ready or blocked packet, then run the wave integration phase when all packet reports are present.
 </incomplete_sessions>
 
 ## Common Mistakes
@@ -339,4 +471,8 @@ Making multiple small Edit calls to SPRINTS.md during write-back — changing th
 ### Skipping the bootstrap
 
 Clearing `currentwork.md` after write-back without checking for a next sprint forces the user to manually trigger sprint extraction in their next session. After every write-back, always scan for the next sprint and populate `currentwork.md` before the session ends.
+
+### Letting sub-agents edit shared state
+
+In wave-plan mode, sub-agents should write only their owned code paths and their own completion report. The coordinator updates `currentwork.md`, `SOFTWARE_STATE.md`, `COMPLETED_SPRINTS.md`, and plan status after validating packet results.
 </common_mistakes>

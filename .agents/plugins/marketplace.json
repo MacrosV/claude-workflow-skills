@@ -1,0 +1,20 @@
+{
+  "name": "claude-workflow-skills-codex",
+  "interface": {
+    "displayName": "Workflow Skills"
+  },
+  "plugins": [
+    {
+      "name": "sprint-workflow",
+      "source": {
+        "source": "local",
+        "path": "./sprint-workflow"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
