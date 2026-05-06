@@ -35,7 +35,15 @@ Sprint extraction, implementation tracking, write-back, and parallel wave planni
 
 This repo also includes a Codex-native plugin manifest at `sprint-workflow/.codex-plugin/plugin.json` and a repo-local marketplace at `.agents/plugins/marketplace.json`.
 
-Use the local marketplace from this repo, or install the plugin directly from:
+Add the GitHub marketplace:
+
+```bash
+codex plugin marketplace add MacrosV/claude-workflow-skills
+```
+
+Then open Codex, run `/plugins`, select the `Workflow Skills` marketplace, and install `sprint-workflow`.
+
+For local development, use the local marketplace from this repo, or install the plugin directly from:
 
 ```text
 ./sprint-workflow
@@ -52,7 +60,8 @@ git clone https://github.com/MacrosV/claude-workflow-skills.git ~/projects/claud
 /plugin install sprint-workflow@claude-workflow-skills
 
 # In Codex:
-# Use .agents/plugins/marketplace.json or install ./sprint-workflow as a local plugin.
+codex plugin marketplace add MacrosV/claude-workflow-skills
+# Then run /plugins and install sprint-workflow from Workflow Skills.
 ```
 
 ## Adding New Skills

@@ -67,9 +67,9 @@ What this packet must not change.
 
 ## Active Sprint Packets
 
-| Packet | Owner | Status | Writes | Packet File | Result File |
-|--------|-------|--------|--------|-------------|-------------|
-| Sprint [NA] | [agent/local] | Ready | `[path/**]` | `currentwork/sprint-[NA].md` | `currentwork/results/[NA].md` |
+| Packet | Owner | Role | Tier | Selection reason | Status | Writes | Packet File | Result File |
+|--------|-------|------|------|------------------|--------|--------|-------------|-------------|
+| Sprint [NA] | [agent/local] | worker | medium | Clear owned implementation with tests | Ready | `[path/**]` | `currentwork/sprint-[NA].md` | `currentwork/results/[NA].md` |
 
 ---
 
