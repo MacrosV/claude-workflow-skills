@@ -1,6 +1,6 @@
 {
   "name": "sprint-workflow",
-  "description": "Sprint extraction, implementation tracking, write-back, and parallel wave planning for AI-assisted development. Provides serial SPRINTS.md workflow support plus IMPLEMENTATION_PLAN.md wave planning for batched non-overlapping sprint packets and sub-agent coordination.",
+  "description": "Sprint extraction, implementation tracking, work queues, suspend/switch, write-back, and parallel wave planning for AI-assisted development. Provides serial SPRINTS.md workflow support plus IMPLEMENTATION_PLAN.md wave planning for batched non-overlapping sprint packets and sub-agent coordination.",
   "license": "EPL-2.0",
   "skills": [
     "./skills/sprint-workflow"

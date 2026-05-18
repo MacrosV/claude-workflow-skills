@@ -7,7 +7,7 @@ Personal Claude Code skill collection.
 ### sprint-workflow
 This skill was created with Claude using the skill creation skill from Pyroxin's Opinionated Claude Skills (https://github.com/Pyroxin/opinionated-claude-skills).
 
-Sprint extraction, implementation tracking, write-back, and parallel wave planning for AI-assisted development against structured serial plans (`SPRINTS.md`) or staged parallel plans (`IMPLEMENTATION_PLAN.md`).
+Sprint extraction, implementation tracking, work queues, suspend/switch, write-back, and parallel wave planning for AI-assisted development against structured serial plans (`SPRINTS.md`) or staged parallel plans (`IMPLEMENTATION_PLAN.md`). The skill is primarily a documentation and coordination scaffold; it is not required for tiny bug fixes or one-file changes.
 
 **Activates when:** Working with a `SPRINTS.md` or `IMPLEMENTATION_PLAN.md` planning document; user mentions "extract sprint", "start sprint", "write back", "currentwork.md", "wave plan", "parallel sprints", or "breakout agents".
 
@@ -17,8 +17,12 @@ Sprint extraction, implementation tracking, write-back, and parallel wave planni
 - Quality checks (feasibility, completeness, self-containment) before each sprint starts
 - Write-back convention (completed `currentwork.md` → implementation record in `SPRINTS.md`)
 - Parallel wave planning for batched non-overlapping sprint packets
+- Lightweight serial wave tracking for coupled work where sub-agents would add overhead
+- Work queue tracking for blocked, suspended, ready, and concurrent sprint packets
+- Suspend/switch guidance for moving from blocked work to unrelated ready work
 - Serial-to-wave conversion guidance for turning `SPRINTS.md` into `IMPLEMENTATION_PLAN.md`
 - Sub-agent coordination conventions using packet files and completion reports
+- Progress, next-step, and commit-readiness reporting
 - Guidance for resuming after context clears mid-sprint
 
 ## Installation
@@ -43,6 +47,17 @@ codex plugin marketplace add MacrosV/claude-workflow-skills
 
 Then open Codex, run `/plugins`, select the `Workflow Skills` marketplace, and install `sprint-workflow`.
 
+To also install the skill into Codex's active skills directory (`~/.codex/skills`), run:
+
+```bash
+python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
+  --repo MacrosV/claude-workflow-skills \
+  --path sprint-workflow/skills/sprint-workflow \
+  --ref main
+```
+
+Restart Codex after installing into `~/.codex/skills`.
+
 For local development, use the local marketplace from this repo, or install the plugin directly from:
 
 ```text
@@ -62,6 +77,11 @@ git clone https://github.com/MacrosV/claude-workflow-skills.git ~/projects/claud
 # In Codex:
 codex plugin marketplace add MacrosV/claude-workflow-skills
 # Then run /plugins and install sprint-workflow from Workflow Skills.
+python3 ~/.codex/skills/.system/skill-installer/scripts/install-skill-from-github.py \
+  --repo MacrosV/claude-workflow-skills \
+  --path sprint-workflow/skills/sprint-workflow \
+  --ref main
+# Restart Codex to pick up the active skill.
 ```
 
 ## Adding New Skills

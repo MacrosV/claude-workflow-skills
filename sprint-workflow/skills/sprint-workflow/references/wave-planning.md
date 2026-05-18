@@ -41,11 +41,13 @@ What this packet must not change.
 | File | Purpose |
 |------|---------|
 | `IMPLEMENTATION_PLAN.md` | Original plan: waves, sprint packets, dependencies, ownership, acceptance criteria |
-| `currentwork.md` | Active coordination state for the current wave or serial sprint |
+| `currentwork.md` | Coordinator-owned active wave index or work queue |
 | `currentwork/sprint-NX.md` | Extracted work packet for one agent |
 | `currentwork/results/NX.md` | Completion report written by one agent |
 | `SOFTWARE_STATE.md` | Current implemented reality after each completed wave |
 | `COMPLETED_SPRINTS.md` | Optional append-only implementation history |
+
+For blocked/suspended work or multiple unrelated active sprints, use `references/work-queue.md` alongside this reference.
 
 ## Wave currentwork.md Template
 
@@ -62,6 +64,14 @@ What this packet must not change.
 ## Wave Goal
 
 [Goal copied from IMPLEMENTATION_PLAN.md]
+
+---
+
+## Workflow Mode
+
+**Mode:** Lightweight serial | Parallel dispatch
+**Reason:** [why this wave is serial or parallel]
+**Coordinator:** [main agent/session]
 
 ---
 
@@ -108,7 +118,30 @@ All must pass after packet completion:
 - [ ] Integration gate passes
 - [ ] SOFTWARE_STATE.md updated
 - [ ] Next wave prepared or all waves complete
+
+---
+
+## Commit Readiness
+
+- [ ] Generated files reviewed
+- [ ] Ignored and untracked files checked
+- [ ] Validation run and results recorded
+- [ ] Docs/current-work/state files updated
+- [ ] Release notes needed/not needed recorded
+- [ ] Vendor/build/cache/local files excluded unless intentionally required
+
+---
+
+## Progress and Next Steps
+
+**Plan progress:** Wave [N] of [total] [complete/in progress] ([percent] by wave count)
+**Completed:** [waves/sprints/tasks complete]
+**Remaining:** [remaining waves/sprints/tasks]
+**Suggested next steps:**
+- [next step]
 ```
+
+For lightweight serial waves, use the same template but set `Mode: Lightweight serial`, keep `Owner` as `local`, and omit `currentwork/sprint-NX.md` packet extraction unless the work grows enough to need packet files.
 
 ## Sprint Packet Template
 
@@ -209,6 +242,10 @@ Sub-agents write one completion report each. The coordinator is the only writer 
 ## Sub-Agent Orchestration
 
 The coordinator owns planning, dispatch, integration, and shared state updates. Sub-agents own only their assigned packet's write paths and completion report.
+
+There is one coordinator-owned `currentwork.md` per active wave. Sub-agents do not create separate current-work documents. They receive packet files (`currentwork/sprint-NX.md`) and write completion reports (`currentwork/results/NX.md`); the coordinator merges those reports into `currentwork.md`, `SOFTWARE_STATE.md`, and optional history documents.
+
+If a packet blocks while other unrelated packets remain ready, suspend the blocked packet using `references/work-queue.md`, then continue with another ready packet only after checking write ownership and local change state.
 
 ### Dispatch Preconditions
 
@@ -331,6 +368,21 @@ You own currentwork/sprint-[NX].md. Read it completely, then implement only the 
 | Coordinator ownership | Shared state documents are updated only by the coordinator |
 
 If any parallel safety check fails, split the conflicting packet, move shared-file edits into a dedicated integration packet, mark conflicting packets as serial, or move dependent work to a later wave.
+
+## Lightweight Serial Wave Checklist
+
+Use this instead of parallel dispatch for small or coupled waves:
+
+- [ ] Current-work document identifies the active wave and mode.
+- [ ] Tasks are ordered by dependency.
+- [ ] Write ownership notes identify shared or coupled files.
+- [ ] Validation commands are listed.
+- [ ] Non-blocking validation issues are explicitly labeled.
+- [ ] Deferred work is recorded.
+- [ ] Commit readiness is recorded before handoff.
+- [ ] Progress and suggested next steps are included in the completion summary.
+
+Do not create sub-agent packets for routine one-agent work unless the wave grows or write ownership becomes separable.
 
 ## Serial to Wave Conversion
 
